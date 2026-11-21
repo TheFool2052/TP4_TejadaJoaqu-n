@@ -96,20 +96,41 @@ public class BasicCharacterController : MonoBehaviour
 
         bool isRunning = Keyboard.current.leftShiftKey.isPressed;
         float currentSpeed = isRunning ? runSpeed : walkSpeed;
+        float targetSpeed = 0f;
+        if (input.magnitude > 0.1f)
+        {
+            targetSpeed = isRunning ? 1f : 0.5f;
+        }
 
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", targetSpeed, 0.1f, Time.deltaTime);
+            animator.SetBool("IsGrounded", characterController.isGrounded);
+        }
         Vector3 movement = transform.right * input.x + transform.forward * input.y;
         movement *= currentSpeed;
 
         if (characterController.isGrounded && verticalVelocity.y < 0f)
             verticalVelocity.y = -2f;
-
+        
         if (characterController.isGrounded && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
             verticalVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            if (animator != null)
+            {
+                animator.SetTrigger("Jump");
+            }
+        }
+       
 
         verticalVelocity.y += gravity * Time.deltaTime;
 
         Vector3 velocity = movement + verticalVelocity;
         characterController.Move(velocity * Time.deltaTime);
+        if (Keyboard.current.eKey.wasPressedThisFrame && animator != null)
+        {
+            animator.SetTrigger("Celebrate");
+        }
     }
 
     private void HandleMouseLook()
